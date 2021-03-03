@@ -10,19 +10,16 @@ const ToDoList = props => {
 	const [todos, setTodos] = useState([]);
 	const [alertBox, setAlertBox] = useState();
 
-	const initialMount = useRef(true);
+	//const initialMount = useRef(true);
 
 	useEffect(() => {
 		loadInitialTodos();
-		initialMount.current = false;
+		//initialMount.current = false;
 	}, []);
 
 	useEffect(() => {
-		if (initialMount.current) {
-			initialMount.current = false;
-		} else {
-			queryApi("PUT", todos);
-		}
+		//if (initialMount.current) initialMount.current = false;
+		if (todos.length > 0) queryApi("PUT", todos);
 	}, [todos]);
 
 	const checkResponseType = response => "ok" in response && !response.ok;
@@ -36,8 +33,7 @@ const ToDoList = props => {
 				apiResponse = await queryApi();
 			} else {
 				setTodos([]);
-				console.error("Unable to create List");
-				return false;
+				throw new Error("Unable to create list");
 			}
 		}
 		setTodos(apiResponse);
@@ -56,7 +52,6 @@ const ToDoList = props => {
 			method === "GET"
 				? await fetch(endpoint)
 				: await fetch(endpoint, options);
-
 		try {
 			if (response.ok) {
 				const resultSet = await response.json();
@@ -65,7 +60,7 @@ const ToDoList = props => {
 				return response;
 			}
 		} catch (error) {
-			console.log(error);
+			throw new Error(error);
 		}
 	};
 
@@ -79,38 +74,30 @@ const ToDoList = props => {
 	};
 
 	const deleteTask = i => {
-		const newTodos = todos.filter((task, idx) => idx !== i);
-		setTodos(newTodos);
+		if (todos.length === 1) deleteList();
+		else {
+			const newTodos = todos.filter((task, idx) => idx !== i);
+			setTodos(newTodos);
+		}
 	};
 
-	const deleteList = e => {
-		e.target.style.display = "none";
-		const apiResponse = queryApi("DELETE");
+	const deleteList = async e => {
+		const apiResponse = await queryApi("DELETE");
+		const alertDivs =
+			"result" in apiResponse ? (
+				<div className="alert alert-success" role="alert">
+					List Deleted.
+					<br /> Please refresh page to recreate list
+				</div>
+			) : (
+				<div className="alert alert-success" role="alert">
+					List Deleted.
+					<br /> Please refresh page to recreate list
+				</div>
+			);
+
 		setTodos([]);
-		apiResponse
-			.then(res => {
-				if (res.result === "ok") {
-					const alert = (
-						<div className="alert alert-success" role="alert">
-							List Deleted.
-							<br /> Please refresh page to recreate list
-						</div>
-					);
-
-					setAlertBox(alert);
-				}
-			})
-			.catch(err => {
-				const alert = (
-					<div className="alert alert-danger" role="alert">
-						Unable to Delete List. <br /> Please check logs for
-						errors.
-					</div>
-				);
-
-				setAlertBox(alert);
-				console.log(err);
-			});
+		setAlertBox(alertDivs);
 	};
 
 	return (
