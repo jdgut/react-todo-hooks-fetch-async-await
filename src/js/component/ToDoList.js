@@ -90,9 +90,9 @@ const ToDoList = props => {
 					<br /> Please refresh page to recreate list
 				</div>
 			) : (
-				<div className="alert alert-success" role="alert">
-					List Deleted.
-					<br /> Please refresh page to recreate list
+				<div className="alert alert-danger" role="alert">
+					Unable to delete List.
+					<br /> Pleasetry again.
 				</div>
 			);
 
